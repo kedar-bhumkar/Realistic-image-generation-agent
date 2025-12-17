@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Images
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+*.svg
+
+# Environment and Secrets
+.env
+token.json
+gen-lang-client-*.json
+client_secret*.json
+credentials.json
+
+# Output/Input directories
+output/
+cache/
+input/
+
+# System
+.DS_Store
+Thumbs.db
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+
