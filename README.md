@@ -1,6 +1,6 @@
-# Nano Banana Pro API
+# Realistic-image-generation-agent
 
-An API wrapper for the Nano Banana Pro workflow, designed to orchestrate image generation and processing tasks using Replicate, OpenAI, and Supabase.
+Agentic workflow for Nano Banana Pro , Qwen image, GPT-image, Flux image, designed to orchestrate image generation using Replicate, OpenAI, n8n, Supabase.
 
 ## Features
 
