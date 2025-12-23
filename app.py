@@ -41,10 +41,12 @@ class RunRequest(BaseModel):
     aspect_ratio: Optional[str] = None
     mode: Optional[str] = "standard"
     model_version: Optional[str] = None
-    image_urls: Optional[list[str]] = None
+    image_urls: Optional[list[str]] = None #takes precendence over source_image_folder_ids
     prompts: Optional[list[str]] = None
+    image_selection_strategy: Optional[str] = "random"
+    source_image_folder_ids: Optional[list[str]] = None
 
-def run_workflow(save_remotely: bool, drive_folder_id: str, category: Optional[str] = None, min_val: Optional[int] = None, max_val: Optional[int] = None, resolution: Optional[str] = None, aspect_ratio: Optional[str] = None, mode: str = "standard", model_version: Optional[str] = None, image_urls: Optional[list[str]] = None, prompts: Optional[list[str]] = None):
+def run_workflow(save_remotely: bool, drive_folder_id: str, category: Optional[str] = None, min_val: Optional[int] = None, max_val: Optional[int] = None, resolution: Optional[str] = None, aspect_ratio: Optional[str] = None, mode: str = "standard", model_version: Optional[str] = None, image_urls: Optional[list[str]] = None, prompts: Optional[list[str]] = None, image_selection_strategy: str = "random", source_image_folder_ids: Optional[list[str]] = None):
     """
     Wrapper to run the main logic. 
     Note: main.py currently prints to stdout and doesn't accept arguments easily,
@@ -65,7 +67,9 @@ def run_workflow(save_remotely: bool, drive_folder_id: str, category: Optional[s
             mode=mode,
             model_version=model_version,
             image_urls=image_urls,
-            prompts=prompts
+            prompts=prompts,
+            image_selection_strategy=image_selection_strategy,
+            source_image_folder_ids=source_image_folder_ids
         )
     except Exception as e:
         print(f"Error running workflow: {e}")
@@ -75,26 +79,29 @@ def read_root():
     return {"status": "online", "message": "Nano Banana Pro API is ready."}
 
 @app.post("/run", dependencies=[Depends(verify_token)])
-def trigger_run(request: RunRequest, background_tasks: BackgroundTasks):
+def trigger_run(requests: list[RunRequest], background_tasks: BackgroundTasks):
     """
-    Triggers the Nano Banana Pro workflow in the background.
+    Triggers the Nano Banana Pro workflow in the background for a list of requests.
     """
-    # Run in background so the API response is immediate
-    background_tasks.add_task(
-        run_workflow, 
-        request.save_remotely, 
-        request.drive_folder_id, 
-        request.category, 
-        request.min_val, 
-        request.max_val,
-        request.resolution,
-        request.aspect_ratio,
-        request.mode,
-        request.model_version,
-        request.image_urls,
-        request.prompts
-    )
-    return {"status": "accepted", "message": "Workflow started in background"}
+    for request in requests:
+        # Run in background so the API response is immediate
+        background_tasks.add_task(
+            run_workflow, 
+            request.save_remotely, 
+            request.drive_folder_id, 
+            request.category, 
+            request.min_val, 
+            request.max_val,
+            request.resolution,
+            request.aspect_ratio,
+            request.mode,
+            request.model_version,
+            request.image_urls,
+            request.prompts,
+            request.image_selection_strategy,
+            request.source_image_folder_ids
+        )
+    return {"status": "accepted", "message": f"{len(requests)} workflows started in background"}
 
 
 

@@ -1,4 +1,5 @@
 import os
+import random
 import replicate
 import requests
 import uuid
@@ -115,6 +116,42 @@ class NanoBananaProGenerator:
             print(f"File uploaded to Google Drive with ID: {file.get('id')}")
         except Exception as e:
             print(f"Error uploading to Google Drive: {e}")
+
+    def list_files_in_folder(self, folder_id):
+        """Lists all image files in a Google Drive folder."""
+        service = self._authenticate_gdrive()
+        if not service:
+            return []
+        
+        results = []
+        page_token = None
+        while True:
+            try:
+                # q parameter to filter by parent folder and image mimeType
+                response = service.files().list(
+                    q=f"'{folder_id}' in parents and mimeType contains 'image/' and trashed = false",
+                    spaces='drive',
+                    fields='nextPageToken, files(id, name)',
+                    pageToken=page_token
+                ).execute()
+                
+                results.extend(response.get('files', []))
+                page_token = response.get('nextPageToken', None)
+                if page_token is None:
+                    break
+            except Exception as e:
+                print(f"Error listing files in folder {folder_id}: {e}")
+                break
+        return results
+
+    def get_random_image_from_folder(self, folder_id):
+        """Pick a random image from a Google Drive folder and return its URL."""
+        files = self.list_files_in_folder(folder_id)
+        if files:
+            selected = random.choice(files)
+            # Construct a URL that _get_gdrive_id can parse
+            return f"https://drive.google.com/file/d/{selected['id']}/view?usp=drive_link"
+        return None
 
     def _is_url(self, path):
         try:

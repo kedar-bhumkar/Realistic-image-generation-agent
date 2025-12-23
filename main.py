@@ -19,7 +19,7 @@ except Exception as e:
     print(f"Warning: Could not import NanoBananaProGenerator from nano-banana-pro.py: {e}")
     NanoBananaProGenerator = None
 
-def main(save_remotely=True, drive_folder_id="1H4wWGNaY01skMzUvQtQmHWlabaTc4rHx", category=None, min_val=None, max_val=None, resolution=None, aspect_ratio=None, mode="standard", model_version=None, image_urls=None, prompts=None):
+def main(save_remotely=True, drive_folder_id="1H4wWGNaY01skMzUvQtQmHWlabaTc4rHx", category=None, min_val=None, max_val=None, resolution=None, aspect_ratio=None, mode="standard", model_version=None, image_urls=None, prompts=None, image_selection_strategy="random", source_image_folder_ids=None):
     print("Starting Nano Banana Pro Orchestrator...")
     
     # Initialize Orchestrator
@@ -29,6 +29,25 @@ def main(save_remotely=True, drive_folder_id="1H4wWGNaY01skMzUvQtQmHWlabaTc4rHx"
         print(f"Configuration Error: {e}")
         print("Please ensure you have set up your .env file correctly.")
         return
+
+    # Handle Image Selection Strategy if image_urls not provided
+    if not image_urls and image_selection_strategy == "random" and source_image_folder_ids:
+        print("Step 0: Selecting random images from source folders...")
+        if NanoBananaProGenerator:
+            # Create a temporary generator instance just for GDrive operations
+            # We use a dummy path since we are only listing files
+            temp_generator = NanoBananaProGenerator("output")
+            image_urls = []
+            for folder_id in source_image_folder_ids:
+                url = temp_generator.get_random_image_from_folder(folder_id)
+                if url:
+                    image_urls.append(url)
+                    print(f"  Selected image from folder {folder_id}: {url}")
+                else:
+                    print(f"  No image found in folder {folder_id}")
+            print(f"Total random images selected: {len(image_urls)}")
+        else:
+            print("Warning: NanoBananaProGenerator not loaded, cannot select random images.")
 
     # Fetch default config if parameters are missing
     # Default fallback if nothing found in DB
