@@ -78,9 +78,36 @@ The API will be available at `http://localhost:8000`.
     "mode": "standard",
     "model_version": "google/nano-banana-pro",
     "image_urls": [],
-    "prompts": []
+    "prompts": [],
+    "image_selection_strategy": "random",
+    "source_image_folder_ids": [],
+    "spawn_duplicate_requests": false,
+    "random_image_prefix": "prefix_",
+    "random_prefix_target_folder_ids": []
   }
   ```
+
+### Request Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `save_remotely` | `bool` | `true` | Whether to save the generated images to Google Drive. |
+| `drive_folder_id` | `str` | `jkjkj` | The Google Drive folder ID where images will be saved. |
+| `category` | `str` | `null` | The category for prompt configuration. If not provided, a random category is selected. |
+| `min_val` | `int` | `null` | Minimum number of prompts to generate. Defaults to 2 internally. |
+| `max_val` | `int` | `null` | Maximum number of prompts to generate. Defaults to 5 internally. Also determines duplication count if `spawn_duplicate_requests` is true. |
+| `resolution` | `str` | `null` | Resolution of generated images (e.g., "1024x1024"). Overrides default. |
+| `aspect_ratio` | `str` | `null` | Aspect ratio of generated images (e.g., "1:1"). Overrides default. |
+| `mode` | `str` | `"standard"` | Prompt generation mode ("standard" or "random"). "random" uses dynamic prompts. |
+| `model_version` | `str` | `null` | Specific model version string to use. |
+| `image_urls` | `list[str]` | `null` | Direct list of input image URLs. Takes precedence over folder selection. |
+| `prompts` | `list[str]` | `null` | Direct list of prompts to use. Skips prompt generation if provided. |
+| `image_selection_strategy` | `str` | `"random"` | Strategy for picking images from folders (currently "random"). |
+| `source_image_folder_ids` | `list[str]` | `null` | List of Drive folder IDs to pick source images from. |
+| `spawn_duplicate_requests` | `bool` | `false` | If true, spawns multiple duplicate jobs (count based on `max_val` or 5). |
+| `random_image_prefix` | `str` | `null` | Filename prefix to filter by when selecting random images. |
+| `random_prefix_target_folder_ids` | `list[str]` | `null` | List of folder IDs where the prefix filter should apply. |
+
 
 ## Project Structure
 

@@ -42,9 +42,9 @@ class NanoBananaProGenerator:
         )
         
         # Scope for uploading files to Google Drive and reading input files
+        # 'https://www.googleapis.com/auth/drive' is required to rename files not created by this app
         self.SCOPES = [
-            'https://www.googleapis.com/auth/drive.file',
-            'https://www.googleapis.com/auth/drive.readonly'
+            'https://www.googleapis.com/auth/drive'
         ]
         self.drive_service = None
 
@@ -144,11 +144,40 @@ class NanoBananaProGenerator:
                 break
         return results
 
-    def get_random_image_from_folder(self, folder_id):
+    def _rename_gdrive_file(self, file_id, new_name):
+        """Renames a file in Google Drive."""
+        service = self._authenticate_gdrive()
+        if not service:
+            return False
+        
+        try:
+            body = {'name': new_name}
+            service.files().update(fileId=file_id, body=body).execute()
+            print(f"Renamed file {file_id} to {new_name}")
+            return True
+        except Exception as e:
+            print(f"Error renaming file {file_id}: {e}")
+            return False
+
+    def get_random_image_from_folder(self, folder_id, filter_prefix=None):
         """Pick a random image from a Google Drive folder and return its URL."""
         files = self.list_files_in_folder(folder_id)
+        
+        if filter_prefix:
+            # Filter out files that already contain the prefix
+            original_count = len(files)
+            files = [f for f in files if filter_prefix not in f['name']]
+            print(f"Filtered out {original_count - len(files)} files containing prefix '{filter_prefix}'. Remaining: {len(files)}")
+            
         if files:
             selected = random.choice(files)
+            
+            if filter_prefix:
+                # Rename the selected file
+                new_name = f"{filter_prefix}{selected['name']}"
+                print(f"Renaming selected random image to: {new_name}")
+                self._rename_gdrive_file(selected['id'], new_name)
+            
             # Construct a URL that _get_gdrive_id can parse
             return f"https://drive.google.com/file/d/{selected['id']}/view?usp=drive_link"
         return None

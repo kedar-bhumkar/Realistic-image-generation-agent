@@ -19,7 +19,7 @@ except Exception as e:
     print(f"Warning: Could not import NanoBananaProGenerator from nano-banana-pro.py: {e}")
     NanoBananaProGenerator = None
 
-def main(save_remotely=True, drive_folder_id="1H4wWGNaY01skMzUvQtQmHWlabaTc4rHx", category=None, min_val=None, max_val=None, resolution=None, aspect_ratio=None, mode="standard", model_version=None, image_urls=None, prompts=None, image_selection_strategy="random", source_image_folder_ids=None):
+def main(save_remotely=True, drive_folder_id="1H4wWGNaY01skMzUvQtQmHWlabaTc4rHx", category=None, min_val=None, max_val=None, resolution=None, aspect_ratio=None, mode="standard", model_version=None, image_urls=None, prompts=None, image_selection_strategy="random", source_image_folder_ids=None, random_image_prefix=None, random_prefix_target_folder_ids=None):
     print("Starting Nano Banana Pro Orchestrator...")
     
     # Initialize Orchestrator
@@ -39,7 +39,16 @@ def main(save_remotely=True, drive_folder_id="1H4wWGNaY01skMzUvQtQmHWlabaTc4rHx"
             temp_generator = NanoBananaProGenerator("output")
             image_urls = []
             for folder_id in source_image_folder_ids:
-                url = temp_generator.get_random_image_from_folder(folder_id)
+                # Determine prefix for this folder
+                prefix_to_use = None
+                if random_image_prefix:
+                    if random_prefix_target_folder_ids:
+                         if folder_id in random_prefix_target_folder_ids:
+                             prefix_to_use = random_image_prefix
+                    else:
+                         prefix_to_use = random_image_prefix
+
+                url = temp_generator.get_random_image_from_folder(folder_id, filter_prefix=prefix_to_use)
                 if url:
                     image_urls.append(url)
                     print(f"  Selected image from folder {folder_id}: {url}")
